@@ -1,5 +1,5 @@
 // require('dotenv').config(path; './env')
-
+// Dotenv is a zero-dependency module that loads environment variables from a .env file into process.env. Storing configuration in the environment separate from code is based on The Twelve-Factor App methodology.
 import dotenv from "dotenv"
 
 import connectDB from "./db/index.js"
@@ -8,7 +8,20 @@ dotenv.config({
     path: './env'
 })
 
-connectDB()
+connectDB()// since DB connect is a async opration so it will return a promise object
+.then(()=>{// so we can use than and catch
+    app.on("error", (err)=>{
+        console.log("ERRR: ", error);
+        throw err
+    })
+    // ||8000 is there because if we are not able to get the port from env than use 8000
+    app.listen(process.env.PORT|| 8000, ()=>{
+        console.log(` Server is running at port : ${process.env.PORT}`);
+    })
+})
+.catch((err)=> {
+    console.log("Mongo db connection failed !!!", err);
+})
 /*
 import express from "express"
 const app = express()
