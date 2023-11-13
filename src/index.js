@@ -1,29 +1,38 @@
 // require('dotenv').config(path; './env')
-// Dotenv is a zero-dependency module that loads environment variables from a .env file into process.env. Storing configuration in the environment separate from code is based on The Twelve-Factor App methodology.
-import dotenv from "dotenv"
+// Import the 'dotenv' library for loading environment variables from a '.env' file.
+import dotenv from "dotenv";
 
-import connectDB from "./db/index.js"
-
+// Import the 'connectDB' function from the 'db' module.
+import connectDB from "./db/index.js";
+import express from "express";
+// Load environment variables from the '.env' file located in the './env' directory.
 dotenv.config({
     path: './env'
-})
+});
 
-connectDB()// since DB connect is a async opration so it will return a promise object
-.then(()=>{// so we can use than and catch
-    app.on("error", (err)=>{
-        console.log("ERRR: ", error);
-        throw err
+// Call the 'connectDB' function to establish a connection to the MongoDB database.
+// Since 'connectDB' returns a Promise, use '.then()' and '.catch()' to handle success and failure.
+connectDB()
+    .then(() => {
+        // Attach an error event listener to the Express application to log and throw errors.
+        app.on("error", (err) => {
+            console.log("ERRR: ", error);
+            throw err;
+        });
+
+        // Start the Express application and listen for incoming requests on the specified port.
+        // Use the port specified in the 'PORT' environment variable, defaulting to 8000 if not provided.
+        app.listen(process.env.PORT || 8000, () => {
+            console.log(` Server is running at port : ${process.env.PORT}`);
+        });
     })
-    // ||8000 is there because if we are not able to get the port from env than use 8000
-    app.listen(process.env.PORT|| 8000, ()=>{
-        console.log(` Server is running at port : ${process.env.PORT}`);
-    })
-})
-.catch((err)=> {
-    console.log("Mongo db connection failed !!!", err);
-})
+    .catch((err) => {
+        // Log an error message if the MongoDB connection fails.
+        console.log("Mongo db connection failed !!!", err);
+    });
+
 /*
-import express from "express"
+
 const app = express()
  // first approch to connect the database
 (async() =>{
