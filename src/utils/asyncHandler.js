@@ -1,12 +1,20 @@
-// since we have to talk to database a lot will write dbconnect code here
-// promish
-const asyncHandler = (requestHandler) => {
-    (req, res, next) => {
-        Promish.resolve(requestHandeler(req, res, next)).catch((err) => next(err))
-    }
-}
+// This is a higher-order function called asyncHandler.
+// It wraps an asynchronous request handler function and ensures that any errors
+// thrown during the execution of the handler are caught and passed to the Express 'next' function.
 
-export {asyncHandler}
+// The asyncHandler takes a request handler function as its parameter.
+const asyncHandler = (requestHandler) => {
+    // The returned function is a middleware function that Express can use.
+    return (req, res, next) => {
+        // Execute the provided request handler function and wrap it in a Promise.
+        // If the function resolves successfully, the next middleware in the chain is called.
+        // If the function rejects (throws an error), the error is caught and passed to the 'next' function.
+        Promise.resolve(requestHandler(req, res, next)).catch((err) => next(err));
+    };
+};
+
+// Export the asyncHandler function for use in other modules.
+export { asyncHandler };
 
 
 
