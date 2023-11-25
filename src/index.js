@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 
 // Import the 'connectDB' function from the 'db' module.
 import connectDB from "./db/index.js";
+import {app} from "./app.js";
 import express from "express";
 // Load environment variables from the '.env' file located in the './env' directory.
 dotenv.config({

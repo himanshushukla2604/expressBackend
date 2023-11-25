@@ -34,5 +34,14 @@ app.use(express.static("public"));
 // Use the 'cookie-parser' middleware to parse cookies from incoming requests.
 app.use(cookieParser());
 
+
+// Routes import
+import userRouter from './routes/user.routes.js';
+
+// routers declaration
+app.use("/api/v1/users", userRouter);
+
+// http://localhost:8000/api/v1/users/register
+
 // Export the 'app' instance for use in other modules.
 export { app };

@@ -9,7 +9,7 @@ const asyncHandler = (requestHandler) => {
         // Execute the provided request handler function and wrap it in a Promise.
         // If the function resolves successfully, the next middleware in the chain is called.
         // If the function rejects (throws an error), the error is caught and passed to the 'next' function.
-        Promise.resolve(requestHandler(req, res, next)).catch((err) => next(err));
+        return Promise.resolve(requestHandler(req, res, next)).catch((err) => next(err));
     };
 };
 
