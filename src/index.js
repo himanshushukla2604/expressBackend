@@ -8,7 +8,7 @@ import {app} from "./app.js";
 import express from "express";
 // Load environment variables from the '.env' file located in the './env' directory.
 dotenv.config({
-    path: './env'
+    path: './.env'
 });
 
 // Call the 'connectDB' function to establish a connection to the MongoDB database.
