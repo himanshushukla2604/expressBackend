@@ -10,8 +10,8 @@ const generateAccessAndRefreshTokens = async(userId)=>{
     try {
         const user = await User.findById(userId)
         const accessToken = user.generateAccessToken()
-        const refreshToken = user.generateRefreshTokens()
-
+        const refreshToken = user.generateRefreshToken()
+        
         user.refreshToken = refreshToken;
         await user.save({validateBeforeSave: false})
         // since we have make password and other field and required in mongoose model 
@@ -105,7 +105,7 @@ const registerUser = asyncHandler(async (req, res) => {
 });
 
 // Define a function to handle user login
-const login = asyncHandler(async (req, res)=>{
+const loginUser = asyncHandler(async (req, res)=>{
     // take data form req body
     // username or email backed login
     // find user
@@ -115,7 +115,8 @@ const login = asyncHandler(async (req, res)=>{
 
     const {email, username, password} = req.body;
 
-    if(!username || !error) {
+    console.log(email);
+    if(!(username || email)) {
         throw new ApiError(400, "username or email is required")
     }
 
@@ -135,7 +136,7 @@ const login = asyncHandler(async (req, res)=>{
 
     const {accessToken, refreshToken} = await generateAccessAndRefreshTokens(user._id);
 
-    const loggedInUser  =  User.findById(user._id).select("-password -refreshToken")// "-"sign means these fields will not be included in the output
+    const loggedInUser  = await User.findById(user._id).select("-password -refreshToken")// "-"sign means these fields will not be included in the output
 
     // send Coockie
     // when we send cookie we have to design the object of onptions
@@ -144,26 +145,53 @@ const login = asyncHandler(async (req, res)=>{
         httpOnly: true,
         secure: true,
     }
+    // console.log(accessToken + " "+ refreshToken)
 
-    return res.status(200)
+    return res
+    .status(200)
     .cookie("accessToken", accessToken, options)
     .cookie("refreshToken", refreshToken, options)
     .json(
-        new ApiResponse(200, {
-            user: loggedInUser, accessToken, refreshToken
-        },
-        "User logged In Successfully"
+        new ApiResponse(
+            200, 
+            {
+                user: loggedInUser, accessToken, refreshToken
+            },
+            "User logged In Successfully"
         )
     )
 
 })
 
+// logout functionality
 const logoutUser = asyncHandler(async(req, res) => {
+    await User.findByIdAndUpdate(
+            req.user._id, 
+            {
+                $set: {
+                    refreshToken: undefined
+                }
+            },
+            {
+                new: true
+            }
+        )
     
+    const options = {
+        httpOnly: true,
+        secure: true
+    }
+
+    return res
+    .status(200)
+    .clearCookie("accessToken", options)
+    .clearCookie("refreshToken", options)
+    .json(new ApiResponse(200, "User Logged out"))
 })
 
 // Export the registerUser function for use in other modules
 export { 
     registerUser, 
-    loginUser
+    loginUser,
+    logoutUser
 };

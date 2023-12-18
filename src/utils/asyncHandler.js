@@ -5,11 +5,15 @@
 // The asyncHandler takes a request handler function as its parameter.
 const asyncHandler = (requestHandler) => {
     // The returned function is a middleware function that Express can use.
-    return (req, res, next) => {
+    return async (req, res, next) => {
         // Execute the provided request handler function and wrap it in a Promise.
         // If the function resolves successfully, the next middleware in the chain is called.
         // If the function rejects (throws an error), the error is caught and passed to the 'next' function.
-        return Promise.resolve(requestHandler(req, res, next)).catch((err) => next(err));
+        try {
+            return await Promise.resolve(requestHandler(req, res, next));
+        } catch (err) {
+            return next(err);
+        }
     };
 };
 
