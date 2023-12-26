@@ -237,10 +237,127 @@ const refreshAccessToken = asyncHandler(async(req, res) => {
         throw new ApiError(401, error?.message || "Invalid refresh Token");
     }
 })
+
+const changeCurrentPassword = asyncHandler(async(req, res) =>{
+    const {oldPassword, newPassword} = req.body
+    const user = await User.findById(req.user?._id)
+    if(!user){
+        throw ApiError(404, "User Not found")
+    }
+
+    const isPasswordCorrect = await user.isPasswordCorrect(oldPassword);
+
+    if(!isPasswordCorrect){
+        throw ApiError(404, "Invalid old password")
+    }
+
+    user.password = newPassword;
+    await user.save({validateBeforeSave: false});
+
+    return res
+    .status(200)
+    .json(new ApiResponse(200, {}, "password changed successfully"))
+})
+
+const getCurrentUser = asyncHandler(async(req, res) => {
+
+    return res
+    .status(200)
+    .json(new ApiResponse(200,req.user, "current user fetched successfully"))
+})
+
+
+const updateAccountDetails = asyncHandler(async(req, res) => {
+    const {fullName, email} = req.body
+
+    if(!(fullName || email)){
+        throw ApiError(401, "All fields are required");
+    }
+
+    const user = User.findByIdAndUpdate(
+        req.user?._id,
+        {
+            $set: {
+                fullName,
+                email
+            },
+        },
+        {new: true}//The { new: true } option instructs Mongoose to return the modified
+        //document rather than the original document. By default, without this option (or if you set it to false),
+        // the findByIdAndUpdate function will return the document as it was before the update operation. 
+    ).select("-password");
+
+    return res
+    .status(200)
+    .json(new ApiResponse(200, user, "given fields are updated"));
+})
+
+const updateAvatar = asyncHandler(async (req, res) => {
+    const avatarLocalPath = req.file?.path;
+    if(!avatarLocalPath){
+        throw new ApiError(401, "Avatar file is missing");
+    } 
+
+    const avatar = await uploadOnCloudinary(avatarLocalPath);
+    if(!avatar.url){
+        throw new ApiError(400, "Error while uploading on avatar");
+    }
+
+    const user = await User.findByIdAndUpdate(
+        req.user._id,
+        {
+            $set: {
+                avatar
+            }
+        },
+        {new: true}
+        ).select("-password -refreshToken");
+
+
+    return res.
+    status(200)
+    .json(new ApiResponse(200, user, "Avatar updated successfully"));
+})
+
+
+const updateCoverImage = asyncHandler(async (req, res) => {
+    const coverImagePath = req.file?.path;
+
+    if(!coverImagePath){
+        throw ApiError(400, "Error coverImage not uploded");
+    }
+
+    const coverImage = await uploadOnCloudinary(coverImagePath);
+
+    if(!coverImage){
+        throw ApiError(400, "Error while uploading to cloudinary")
+    }
+
+    const user = User.findByIdAndUpdate(
+        req.user._id,
+        {
+            $set:{
+
+                coverImage
+            }
+        },
+        {new: true}
+    ).select("-password -refreshToken")
+
+    return res
+    .status(200)
+    .json(new ApiResponse(200, user, "coverImage updated succesfully"));
+})
+
 // Export the registerUser function for use in other modules
 export { 
     registerUser, 
     loginUser,
     logoutUser,
-    refreshAccessToken
+    refreshAccessToken,
+    changeCurrentPassword,
+    getCurrentUser,
+    updateAccountDetails,
+    updateAvatar,
+    updateCoverImage
 };
